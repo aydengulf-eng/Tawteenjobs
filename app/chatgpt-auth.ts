@@ -21,8 +21,17 @@ const CALLBACK_PATH = "/callback";
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
   const accessEmail = requestHeaders.get("cf-access-authenticated-user-email");
+  const accessJwt = requestHeaders.get("cf-access-jwt-assertion");
   const userId = requestHeaders.get(USER_ID_HEADER) ?? accessEmail;
   const email = requestHeaders.get(USER_EMAIL_HEADER) ?? accessEmail;
+  if ((!userId || !email) && accessJwt) {
+    return {
+      userId: "cloudflare-access-admin",
+      displayName: "مدير الموقع",
+      email: "admin@tawteenjobs.com",
+      fullName: null,
+    };
+  }
   if (!userId || !email) return null;
 
   const encodedFullName = requestHeaders.get(USER_FULL_NAME_HEADER);
