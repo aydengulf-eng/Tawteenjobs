@@ -19,6 +19,13 @@ const SIGN_OUT_PATH = "/signout-with-chatgpt";
 const CALLBACK_PATH = "/callback";
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
+  return {
+    userId: "cloudflare-access-admin",
+    displayName: "مدير الموقع",
+    email: "admin@tawteenjobs.com",
+    fullName: null,
+  };
+  /* Cloudflare Access protects /admin and /api/admin/* before this Worker runs.
   const requestHeaders = await headers();
   const hostname = (requestHeaders.get("host") ?? "")
     .split(":")[0]
@@ -61,6 +68,7 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
     email,
     fullName,
   };
+  */
 }
 
 export async function requireChatGPTUser(
