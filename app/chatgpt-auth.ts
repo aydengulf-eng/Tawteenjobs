@@ -22,9 +22,12 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
   const requestHeaders = await headers();
   const accessEmail = requestHeaders.get("cf-access-authenticated-user-email");
   const accessJwt = requestHeaders.get("cf-access-jwt-assertion");
+  const accessCookie = (requestHeaders.get("cookie") ?? "")
+    .split(";")
+    .some((cookie) => cookie.trim().startsWith("CF_Authorization="));
   const userId = requestHeaders.get(USER_ID_HEADER) ?? accessEmail;
   const email = requestHeaders.get(USER_EMAIL_HEADER) ?? accessEmail;
-  if ((!userId || !email) && accessJwt) {
+  if ((!userId || !email) && (accessJwt || accessCookie)) {
     return {
       userId: "cloudflare-access-admin",
       displayName: "مدير الموقع",
