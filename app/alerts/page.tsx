@@ -1,0 +1,3 @@
+import { SiteHeader } from "@/components/site-header"; import { AlertForm } from "@/components/alert-form";
+export const metadata={title:"تنبيهات الوظائف | توطين",description:"اشترك مجاناً لتتوصل بأحدث وظائف الخليج."};
+export default function Alerts(){return <main dir="rtl" className="min-h-screen bg-[#f5f8fa]"><SiteHeader/><section className="container-shell max-w-3xl py-16"><AlertForm/><div className="mt-8 grid gap-4 sm:grid-cols-3">{["تنبيهات حسب تخصصك","فرص من دول الخليج","إلغاء الاشتراك بسهولة"].map(x=><div key={x} className="rounded-xl border bg-white p-5 text-center font-black">{x}</div>)}</div></section></main>}

@@ -1,0 +1,2 @@
+import { desc, eq } from "drizzle-orm"; import { getDb } from "@/db"; import { jobs } from "@/db/schema";
+export async function GET(){try{const rows=await getDb().select().from(jobs).where(eq(jobs.status,"published")).orderBy(desc(jobs.publishedAt),desc(jobs.createdAt)).limit(100);return Response.json({jobs:rows});}catch{return Response.json({jobs:[],notice:"الوظائف المباشرة غير متاحة مؤقتاً"});}}

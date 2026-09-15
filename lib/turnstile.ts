@@ -1,0 +1,2 @@
+import { env } from "cloudflare:workers";
+export async function verifyTurnstile(token:string,ip?:string|null){if(!env.TURNSTILE_SECRET_KEY)return {ok:false,error:"الحماية لم تُفعّل بعد"};const form=new FormData();form.set("secret",env.TURNSTILE_SECRET_KEY);form.set("response",token);if(ip)form.set("remoteip",ip);try{const r=await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify",{method:"POST",body:form});const d=await r.json() as {success?:boolean};return {ok:Boolean(d.success)};}catch{return {ok:false,error:"تعذر التحقق الأمني"};}}
