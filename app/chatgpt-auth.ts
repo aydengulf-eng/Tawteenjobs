@@ -19,41 +19,17 @@ const SIGN_OUT_PATH = "/signout-with-chatgpt";
 const CALLBACK_PATH = "/callback";
 
 export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
-  return {
-    userId: "cloudflare-access-admin",
-    displayName: "مدير الموقع",
-    email: "admin@tawteenjobs.com",
-    fullName: null,
-  };
-  /* Cloudflare Access protects /admin and /api/admin/* before this Worker runs.
   const requestHeaders = await headers();
-  const hostname = (requestHeaders.get("host") ?? "")
-    .split(":")[0]
-    .toLowerCase();
-  if (hostname === "tawteenjobs.com" || hostname === "www.tawteenjobs.com") {
-    return {
-      userId: "cloudflare-access-admin",
-      displayName: "مدير الموقع",
-      email: "admin@tawteenjobs.com",
-      fullName: null,
-    };
-  }
   const accessEmail = requestHeaders.get("cf-access-authenticated-user-email");
   const accessJwt = requestHeaders.get("cf-access-jwt-assertion");
-  const accessCookie = (requestHeaders.get("cookie") ?? "")
-    .split(";")
-    .some((cookie) => cookie.trim().startsWith("CF_Authorization="));
+
+  // Cloudflare Access must authenticate the request before the Worker trusts it.
+  // The secret used by bulk imports remains a second, independent check.
+  if (!accessJwt) return null;
+
   const userId = requestHeaders.get(USER_ID_HEADER) ?? accessEmail;
   const email = requestHeaders.get(USER_EMAIL_HEADER) ?? accessEmail;
-  if ((!userId || !email) && (accessJwt || accessCookie)) {
-    return {
-      userId: "cloudflare-access-admin",
-      displayName: "مدير الموقع",
-      email: "admin@tawteenjobs.com",
-      fullName: null,
-    };
-  }
-  if (!userId || !email) return null;
+  const verifiedEmail = email ?? "cloudflare-access-user";
 
   const encodedFullName = requestHeaders.get(USER_FULL_NAME_HEADER);
   const fullName =
@@ -63,12 +39,11 @@ export async function getChatGPTUser(): Promise<ChatGPTUser | null> {
       : null;
 
   return {
-    userId,
-    displayName: fullName ?? email,
-    email,
+    userId: userId ?? "cloudflare-access-admin",
+    displayName: fullName ?? verifiedEmail,
+    email: verifiedEmail,
     fullName,
   };
-  */
 }
 
 export async function requireChatGPTUser(
