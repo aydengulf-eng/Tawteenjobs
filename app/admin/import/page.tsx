@@ -1,0 +1,4 @@
+import { requireChatGPTUser } from "@/app/chatgpt-auth";
+import { BulkImportForm } from "./bulk-import-form";
+export const dynamic="force-dynamic";
+export default async function ImportPage(){await requireChatGPTUser("/admin/import");return <main dir="rtl" className="min-h-screen bg-[#f3f6f8]"><header className="border-b bg-[#071a2e] text-white"><div className="container-shell flex h-20 items-center justify-between"><a href="/admin" className="text-xl font-black">توطين <span className="text-[#d4b46d]">لوحة الإدارة</span></a><a href="/admin" className="text-sm font-black text-white/70">رجوع</a></div></header><section className="container-shell py-8"><h1 className="text-3xl font-black text-[#071a2e]">استيراد وظائف دفعة واحدة</h1><p className="mt-2 mb-6 font-bold text-slate-500">ألصق JSON وأدخل الكود السري. المكرر يتم تخطيه.</p><BulkImportForm/></section></main>}

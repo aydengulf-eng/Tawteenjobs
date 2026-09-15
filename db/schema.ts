@@ -13,6 +13,7 @@ export const jobs = sqliteTable("jobs", {
   employmentType: text("employment_type").notNull().default("دوام كامل"),
   workMode: text("work_mode").notNull().default("حضوري"),
   salary: text("salary").notNull().default(""),
+  applyUrl: text("apply_url").notNull().default(""),
   descriptionAr: text("description_ar").notNull(),
   requirementsAr: text("requirements_ar").notNull().default("[]"),
   status: text("status").notNull().default("draft"),

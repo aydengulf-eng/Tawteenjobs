@@ -1,7 +1,7 @@
 export type Job = {
   slug: string; title: string; company: string; city: string; country: string;
   type: string; mode: string; age: string; badge: string; initials: string;
-  category: string; salary: string; description: string; requirements: string[];
+  category: string; salary: string; description: string; requirements: string[]; applyUrl?: string;
 };
 
 export const jobs: Job[] = [

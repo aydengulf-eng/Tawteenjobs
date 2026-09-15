@@ -18,7 +18,7 @@ export default async function JobsPage() {
       mode: row.workMode, age: "حديثاً",
       badge: row.featured ? "مميزة" : "جديدة",
       initials: row.company.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase(),
-      category: row.category, salary: row.salary,
+      category: row.category, salary: row.salary, applyUrl: row.applyUrl,
       description: row.descriptionAr,
       requirements: JSON.parse(row.requirementsAr || "[]") as string[],
     }));

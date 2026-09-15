@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   try {
     const existing=await getDb().select({id:jobs.id}).from(jobs).where(eq(jobs.slug,slug)).limit(1);
     if(existing.length) return Response.json({error:"هذه الوظيفة موجودة مسبقاً"},{status:409});
-    const [created]=await getDb().insert(jobs).values({slug,titleAr,company,country,city,category:String(body.category??"عام"),employmentType:String(body.employmentType??"دوام كامل"),workMode:String(body.workMode??"حضوري"),salary:String(body.salary??""),descriptionAr,status:String(body.status??"draft"),publishedAt:body.status==="published"?new Date().toISOString():null}).returning();
+    const [created]=await getDb().insert(jobs).values({slug,titleAr,company,country,city,category:String(body.category??"عام"),employmentType:String(body.employmentType??"دوام كامل"),workMode:String(body.workMode??"حضوري"),salary:String(body.salary??""),applyUrl:String(body.applyUrl??""),descriptionAr,status:String(body.status??"draft"),publishedAt:body.status==="published"?new Date().toISOString():null}).returning();
     return Response.json({job:created},{status:201});
   } catch { return Response.json({error:"تعذر حفظ الوظيفة حالياً"},{status:500}); }
 }
