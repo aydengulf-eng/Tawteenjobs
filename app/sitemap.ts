@@ -1,2 +1,51 @@
-import type { MetadataRoute } from "next"; import { jobs,countryData } from "@/lib/jobs"; import { articles } from "@/lib/content";
-export default function sitemap():MetadataRoute.Sitemap{const base="https://tawteenjobs.com";return [{url:base,changeFrequency:"daily",priority:1},{url:`${base}/jobs`,changeFrequency:"hourly",priority:.9},{url:`${base}/companies`,changeFrequency:"weekly",priority:.7},{url:`${base}/salaries`,changeFrequency:"monthly",priority:.7},{url:`${base}/articles`,changeFrequency:"weekly",priority:.8},{url:`${base}/en`,changeFrequency:"daily",priority:.8},...jobs.map(j=>({url:`${base}/jobs/${j.slug}`,changeFrequency:"weekly" as const,priority:.8})),...Object.keys(countryData).map(x=>({url:`${base}/countries/${x}`,changeFrequency:"daily" as const,priority:.8})),...articles.map(a=>({url:`${base}/articles/${a.slug}`,changeFrequency:"monthly" as const,priority:.7}))]}
+import type { MetadataRoute } from "next";
+import { eq } from "drizzle-orm";
+import { getDb } from "@/db";
+import { articles, jobs } from "@/db/schema";
+import { countryData } from "@/lib/jobs";
+
+const base = "https://tawteenjobs.com";
+
+export const dynamic = "force-dynamic";
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const staticPages: MetadataRoute.Sitemap = [
+    { url: base, changeFrequency: "daily", priority: 1 },
+    { url: `${base}/jobs`, changeFrequency: "hourly", priority: 0.9 },
+    { url: `${base}/companies`, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${base}/salaries`, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${base}/articles`, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${base}/en`, changeFrequency: "daily", priority: 0.8 },
+    ...Object.keys(countryData).map((slug) => ({
+      url: `${base}/countries/${slug}`,
+      changeFrequency: "daily" as const,
+      priority: 0.8,
+    })),
+  ];
+
+  try {
+    const db = getDb();
+    const [publishedJobs, publishedArticles] = await Promise.all([
+      db.select({ slug: jobs.slug, updatedAt: jobs.updatedAt }).from(jobs).where(eq(jobs.status, "published")),
+      db.select({ slug: articles.slug, updatedAt: articles.updatedAt }).from(articles).where(eq(articles.status, "published")),
+    ]);
+
+    return [
+      ...staticPages,
+      ...publishedJobs.map((job) => ({
+        url: `${base}/jobs/${job.slug}`,
+        lastModified: new Date(job.updatedAt),
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      })),
+      ...publishedArticles.map((article) => ({
+        url: `${base}/articles/${article.slug}`,
+        lastModified: new Date(article.updatedAt),
+        changeFrequency: "monthly" as const,
+        priority: 0.7,
+      })),
+    ];
+  } catch {
+    return staticPages;
+  }
+}
