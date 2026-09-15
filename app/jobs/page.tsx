@@ -1,12 +1,14 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Bookmark, BriefcaseBusiness, Clock3, MapPin, Search, SlidersHorizontal } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
-import { jobs } from "@/lib/jobs";
+import { jobs as demoJobs, type Job } from "@/lib/jobs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function JobsPage() {
+  const [jobs,setJobs]=useState<Job[]>(demoJobs);
   const [query,setQuery]=useState(""); const [country,setCountry]=useState("all"); const [category,setCategory]=useState("all");
+  useEffect(()=>{fetch("/api/jobs").then(r=>r.json()).then((data:{jobs?:Record<string,unknown>[]})=>{if(!data.jobs?.length)return;setJobs(data.jobs.map((row)=>({slug:String(row.slug),title:String(row.titleAr),company:String(row.company),city:String(row.city),country:String(row.country),type:String(row.employmentType),mode:String(row.workMode),age:"حديثاً",badge:Boolean(row.featured)?"مميزة":"جديدة",initials:String(row.company).split(/\s+/).map(x=>x[0]).join("").slice(0,2).toUpperCase(),category:String(row.category),salary:String(row.salary),description:String(row.descriptionAr),requirements:JSON.parse(String(row.requirementsAr||"[]")) as string[]})));}).catch(()=>{});},[]);
   const filtered=useMemo(()=>jobs.filter(j=>(!query||`${j.title} ${j.company} ${j.city}`.includes(query))&&(country==="all"||j.country===country)&&(category==="all"||j.category===category)),[query,country,category]);
   return <main dir="rtl" className="min-h-screen bg-[#f5f8fa]"><SiteHeader />
     <section className="bg-[#071a2e] py-12 text-white"><div className="container-shell"><p className="text-sm font-black text-[#d7b66d]">فرص العمل في الخليج</p><h1 className="mt-2 text-3xl font-black md:text-4xl">ابحث عن وظيفتك المناسبة</h1><p className="mt-3 text-slate-300">صفِّ النتائج حسب الدولة والتخصص، ثم اطلع على تفاصيل كل فرصة.</p></div></section>
