@@ -5,10 +5,10 @@ import { SiteHeader } from "@/components/site-header";
 import type { Job } from "@/lib/jobs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function JobsClient({initialJobs}:{initialJobs:Job[]}) {
+export function JobsClient({initialJobs,initialQuery="",initialCountry="all"}:{initialJobs:Job[];initialQuery?:string;initialCountry?:string}) {
   const [jobs]=useState<Job[]>(initialJobs);
-  const [query,setQuery]=useState(""); const [country,setCountry]=useState("all"); const [category,setCategory]=useState("all");
-  const filtered=useMemo(()=>jobs.filter(j=>(!query||`${j.title} ${j.company} ${j.city}`.includes(query))&&(country==="all"||j.country===country)&&(category==="all"||j.category===category)),[query,country,category]);
+  const [query,setQuery]=useState(initialQuery); const [country,setCountry]=useState(initialCountry); const [category,setCategory]=useState("all");
+  const filtered=useMemo(()=>jobs.filter(j=>(!query||`${j.title} ${j.company} ${j.city}`.includes(query))&&(country==="all"||j.country===country||(country==="عُمان"&&j.country==="عمان"))&&(category==="all"||j.category===category)),[jobs,query,country,category]);
   return <main dir="rtl" className="min-h-screen bg-[#f5f8fa]"><SiteHeader />
     <section className="bg-[#071a2e] py-12 text-white"><div className="container-shell"><p className="text-sm font-black text-[#d7b66d]">فرص العمل في الخليج</p><h1 className="mt-2 text-3xl font-black md:text-4xl">ابحث عن وظيفتك المناسبة</h1><p className="mt-3 text-slate-300">صفِّ النتائج حسب الدولة والتخصص، ثم اطلع على تفاصيل كل فرصة.</p></div></section>
     <div className="container-shell grid gap-6 py-9 lg:grid-cols-[280px_1fr]">

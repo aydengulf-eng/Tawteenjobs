@@ -6,7 +6,8 @@ import { JobsClient } from "./jobs-client";
 
 export const dynamic = "force-dynamic";
 
-export default async function JobsPage() {
+export default async function JobsPage({searchParams}:{searchParams:Promise<{country?:string;q?:string;company?:string}>}) {
+  const params=await searchParams;
   let liveJobs: Job[] = [];
   try {
     const rows = await getDb().select().from(jobsTable)
@@ -23,5 +24,5 @@ export default async function JobsPage() {
       requirements: JSON.parse(row.requirementsAr || "[]") as string[],
     }));
   } catch {}
-  return <JobsClient initialJobs={liveJobs.length ? liveJobs : demoJobs} />;
+  return <JobsClient initialJobs={liveJobs.length ? liveJobs : demoJobs} initialQuery={params.company??params.q??""} initialCountry={params.country??"all"} />;
 }

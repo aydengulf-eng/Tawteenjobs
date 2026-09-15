@@ -1,31 +1,27 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, Bell, Bookmark, BriefcaseBusiness, Building2, ChevronDown, Clock3, MapPin, Menu, Search, ShieldCheck, Sparkles, TrendingUp, Users, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const countries = [
-  { name: "السعودية", code: "SA", count: "1,248", tint: "from-emerald-500/15 to-emerald-500/5" },
-  { name: "الإمارات", code: "AE", count: "936", tint: "from-rose-500/15 to-rose-500/5" },
-  { name: "قطر", code: "QA", count: "428", tint: "from-purple-500/15 to-purple-500/5" },
-  { name: "الكويت", code: "KW", count: "367", tint: "from-sky-500/15 to-sky-500/5" },
-  { name: "عُمان", code: "OM", count: "294", tint: "from-red-500/15 to-red-500/5" },
-  { name: "البحرين", code: "BH", count: "186", tint: "from-orange-500/15 to-orange-500/5" },
+  { name: "السعودية", code: "SA", tint: "from-emerald-500/15 to-emerald-500/5" },
+  { name: "الإمارات", code: "AE", tint: "from-rose-500/15 to-rose-500/5" },
+  { name: "قطر", code: "QA", tint: "from-purple-500/15 to-purple-500/5" },
+  { name: "الكويت", code: "KW", tint: "from-sky-500/15 to-sky-500/5" },
+  { name: "عُمان", code: "OM", tint: "from-red-500/15 to-red-500/5" },
+  { name: "البحرين", code: "BH", tint: "from-orange-500/15 to-orange-500/5" },
 ];
 
-const jobs = [
-  { title: "مدير تطوير أعمال", company: "شركة تقنية رائدة", city: "الرياض", country: "السعودية", type: "دوام كامل", mode: "حضوري", age: "منذ ساعتين", badge: "جديدة", initials: "TR", color: "bg-[#0c9b78]" },
-  { title: "محاسب أول", company: "مجموعة استثمارية", city: "دبي", country: "الإمارات", type: "دوام كامل", mode: "هجين", age: "منذ 4 ساعات", badge: "مميزة", initials: "MI", color: "bg-[#d29f45]" },
-  { title: "أخصائي تجربة العملاء", company: "منصة تجارة إلكترونية", city: "جدة", country: "السعودية", type: "دوام كامل", mode: "حضوري", age: "منذ 6 ساعات", badge: "توطين", initials: "EC", color: "bg-[#375a7f]" },
-  { title: "مهندس برمجيات Frontend", company: "حلول السحابة الخليجية", city: "أبوظبي", country: "الإمارات", type: "دوام كامل", mode: "هجين", age: "منذ 8 ساعات", badge: "جديدة", initials: "GC", color: "bg-[#7257b5]" },
-];
+type HomeJob = { slug:string; title:string; company:string; city:string; country:string; type:string; mode:string; age:string; badge:string; initials:string; color:string };
+type HomeArticle = { slug:string; title:string; category:string; excerpt:string; imageUrl:string; readTime:string };
 
 const specialties = [
-  { label: "التقنية والبرمجة", count: "684 وظيفة", icon: BriefcaseBusiness },
-  { label: "المبيعات والتسويق", count: "521 وظيفة", icon: TrendingUp },
-  { label: "المالية والمحاسبة", count: "376 وظيفة", icon: Building2 },
-  { label: "الموارد البشرية", count: "248 وظيفة", icon: Users },
+  { label: "تقنية", icon: BriefcaseBusiness },
+  { label: "المبيعات", icon: TrendingUp },
+  { label: "المالية", icon: Building2 },
+  { label: "الموارد البشرية", icon: Users },
 ];
 
 function Brand({ inverse = false }: { inverse?: boolean }) {
@@ -41,10 +37,21 @@ export default function Home() {
   const [country, setCountry] = useState("all");
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [saved, setSaved] = useState<string[]>([]);
+  const [jobs, setJobs] = useState<HomeJob[]>([]);
+  const [articles, setArticles] = useState<HomeArticle[]>([]);
+  useEffect(() => {
+    fetch("/api/jobs").then(r=>r.json()).then((data:{jobs?:Record<string,unknown>[]})=>setJobs((data.jobs??[]).map((row)=>({
+      slug:String(row.slug??""),title:String(row.titleAr??""),company:String(row.company??""),city:String(row.city??""),country:String(row.country??""),type:String(row.employmentType??""),mode:String(row.workMode??""),age:"حديثاً",badge:row.featured?"مميزة":"جديدة",initials:String(row.company??"").split(/\s+/).map(x=>x[0]).join("").slice(0,2).toUpperCase(),color:"bg-[#0c9b78]"
+    })))).catch(()=>{});
+    fetch("/api/articles").then(r=>r.json()).then((data:{articles?:HomeArticle[]})=>setArticles(data.articles??[])).catch(()=>{});
+  }, []);
+  const companyCount = useMemo(() => new Set(jobs.map(j=>j.company)).size, [jobs]);
+  const countryCount = (name:string) => jobs.filter(j=>j.country===name || (name==="عُمان"&&j.country==="عمان")).length;
+  const specialtyCount = (label:string) => jobs.filter(j=>`${j.title}`.includes(label)).length;
   const shownJobs = useMemo(() => jobs.filter((job) => {
     const text = `${job.title} ${job.company} ${job.city}`;
     return (!submittedQuery || text.includes(submittedQuery)) && (country === "all" || job.country === country);
-  }), [submittedQuery, country]);
+  }), [jobs, submittedQuery, country]);
 
   function runSearch(event: React.FormEvent) {
     event.preventDefault();
@@ -63,12 +70,12 @@ export default function Home() {
       <div className="container-shell flex h-[82px] items-center justify-between gap-6">
         <Brand />
         <nav className="hidden items-center gap-7 text-[0.92rem] font-bold text-[#31485d] xl:flex" aria-label="التنقل الرئيسي">
-          <a className="nav-active" href="#">الرئيسية</a><a className="hover:text-[#009b78]" href="/jobs">الوظائف</a><a className="flex items-center gap-1 hover:text-[#009b78]" href="/countries/saudi-arabia">الدول <ChevronDown className="h-3.5 w-3.5" /></a><a className="hover:text-[#009b78]" href="#specialties">التخصصات</a><a className="hover:text-[#009b78]" href="#">الشركات</a><a className="hover:text-[#009b78]" href="#">الرواتب</a><a className="hover:text-[#009b78]" href="#">دليل التوظيف</a>
+          <a className="nav-active" href="/">الرئيسية</a><a className="hover:text-[#009b78]" href="/jobs">الوظائف</a><a className="flex items-center gap-1 hover:text-[#009b78]" href="#countries">الدول <ChevronDown className="h-3.5 w-3.5" /></a><a className="hover:text-[#009b78]" href="#specialties">التخصصات</a><a className="hover:text-[#009b78]" href="/companies">الشركات</a><a className="hover:text-[#009b78]" href="/salaries">الرواتب</a><a className="hover:text-[#009b78]" href="/articles">دليل التوظيف</a>
         </nav>
         <div className="hidden items-center gap-3 md:flex"><button className="rounded-lg px-3 py-2 text-sm font-extrabold text-[#526779] hover:bg-slate-100">English</button><Button className="h-11 rounded-xl bg-[#071a2e] px-5 font-extrabold text-white hover:bg-[#0e2c48]">أعلن عن وظيفة</Button></div>
         <button onClick={() => setMenuOpen(!menuOpen)} className="grid h-11 w-11 place-items-center rounded-xl border border-slate-200 bg-white xl:hidden" aria-label="فتح القائمة">{menuOpen ? <X /> : <Menu />}</button>
       </div>
-      {menuOpen && <nav className="container-shell grid gap-1 border-t border-slate-100 py-4 text-sm font-bold xl:hidden">{["الرئيسية", "الوظائف", "الدول", "التخصصات", "الشركات", "الرواتب", "دليل التوظيف", "English"].map((item) => <a key={item} className="rounded-lg px-3 py-3 hover:bg-emerald-50" href="#" onClick={() => setMenuOpen(false)}>{item}</a>)}</nav>}
+      {menuOpen && <nav className="container-shell grid gap-1 border-t border-slate-100 py-4 text-sm font-bold xl:hidden">{[["الرئيسية","/"],["الوظائف","/jobs"],["الدول","/#countries"],["التخصصات","/#specialties"],["الشركات","/companies"],["الرواتب","/salaries"],["دليل التوظيف","/articles"],["English","/en"]].map(([item,href]) => <a key={item} className="rounded-lg px-3 py-3 hover:bg-emerald-50" href={href} onClick={() => setMenuOpen(false)}>{item}</a>)}</nav>}
     </header>
 
     <section className="hero-shell relative">
@@ -84,21 +91,23 @@ export default function Home() {
         </form>
         <div className="mt-5 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm font-semibold text-slate-400"><span>الأكثر بحثاً:</span><a href="#latest-jobs" className="text-white/80 hover:text-white">وظائف إدارية</a><a href="#latest-jobs" className="text-white/80 hover:text-white">تقنية المعلومات</a><a href="#latest-jobs" className="text-white/80 hover:text-white">حديثو التخرج</a></div>
       </div></div>
-      <div className="container-shell relative z-20 -mb-14 translate-y-1/2"><div className="stats-card grid grid-cols-2 divide-x-reverse divide-x divide-slate-100 md:grid-cols-4">{[{n:"3,459+",t:"وظيفة متاحة"},{n:"620+",t:"شركة موثوقة"},{n:"6",t:"دول خليجية"},{n:"يومياً",t:"تحديث الوظائف"}].map((stat) => <div className="px-4 py-5 text-center sm:py-6" key={stat.t}><strong className="block text-2xl font-black text-[#071a2e] sm:text-3xl">{stat.n}</strong><span className="mt-1 block text-sm font-bold text-slate-500">{stat.t}</span></div>)}</div></div>
+      <div className="container-shell relative z-20 pb-8"><div className="stats-card grid grid-cols-2 divide-x-reverse divide-x divide-slate-100 md:grid-cols-4">{[{n:String(jobs.length),t:"وظيفة متاحة"},{n:String(companyCount),t:"شركة توظف"},{n:"6",t:"دول خليجية"},{n:"يومياً",t:"تحديث الوظائف"}].map((stat) => <div className="px-3 py-4 text-center sm:py-6" key={stat.t}><strong className="block text-xl font-black text-[#071a2e] sm:text-3xl">{stat.n}</strong><span className="mt-1 block text-xs font-bold text-slate-500 sm:text-sm">{stat.t}</span></div>)}</div></div>
     </section>
 
-    <section id="countries" className="container-shell scroll-mt-28 pb-12 pt-28 md:pt-32"><SectionHeading eyebrow="اكتشف الفرص حولك" title="تصفح الوظائف حسب الدولة" action="عرض جميع الدول" /><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">{countries.map((item) => <a key={item.code} href="#latest-jobs" onClick={() => setCountry(item.name)} className={`country-card group bg-gradient-to-br ${item.tint}`}><span className="country-code">{item.code}</span><strong>{item.name}</strong><small>{item.count} وظيفة</small><ArrowLeft className="mt-4 h-4 w-4 text-[#00a67e] opacity-0 transition group-hover:opacity-100" /></a>)}</div></section>
+    <section id="countries" className="container-shell scroll-mt-28 py-14"><SectionHeading eyebrow="اكتشف الفرص حولك" title="تصفح الوظائف حسب الدولة" action="عرض جميع الدول" href="/jobs" /><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">{countries.map((item) => <a key={item.code} href={`/jobs?country=${encodeURIComponent(item.name)}`} className={`country-card group bg-gradient-to-br ${item.tint}`}><span className="country-code">{item.code}</span><strong>{item.name}</strong><small>{countryCount(item.name)} وظيفة</small><ArrowLeft className="mt-4 h-4 w-4 text-[#00a67e] opacity-0 transition group-hover:opacity-100" /></a>)}</div></section>
 
     <section id="latest-jobs" className="container-shell scroll-mt-28 py-14">
       <SectionHeading eyebrow="فرص مختارة بعناية" title={submittedQuery || country !== "all" ? `نتائج البحث (${shownJobs.length})` : "أحدث الوظائف"} action="عرض جميع الوظائف" />
-      <div className="mt-8 grid gap-4 lg:grid-cols-2">{shownJobs.length ? shownJobs.map((job) => <article key={job.title} className="job-card group">
+      <div className="mt-8 grid gap-4 lg:grid-cols-2">{shownJobs.length ? shownJobs.slice(0,6).map((job) => <a href={`/jobs/${job.slug}`} key={job.slug} className="job-card group">
         <div className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${job.color} text-sm font-black tracking-wider text-white shadow-sm`}>{job.initials}</div>
         <div className="min-w-0 flex-1"><div className="flex flex-wrap items-start justify-between gap-2"><div><span className={`mb-2 inline-block rounded-full px-2.5 py-1 text-[0.7rem] font-black ${job.badge === "مميزة" ? "bg-amber-50 text-amber-700" : "bg-emerald-50 text-emerald-700"}`}>{job.badge}</span><h3 className="text-lg font-black text-[#0b2135] transition group-hover:text-[#009b78]">{job.title}</h3></div><button onClick={() => toggleSaved(job.title)} className={`grid h-10 w-10 place-items-center rounded-xl border transition ${saved.includes(job.title) ? "border-[#00a67e] bg-emerald-50 text-[#00a67e]" : "border-slate-200 text-slate-400 hover:border-[#00a67e] hover:text-[#00a67e]"}`} aria-label={`حفظ وظيفة ${job.title}`}><Bookmark className={`h-4 w-4 ${saved.includes(job.title) ? "fill-current" : ""}`} /></button></div>
         <p className="mt-2 text-sm font-bold text-slate-500">{job.company}</p><div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-[0.78rem] font-bold text-slate-500"><span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-[#00a67e]" />{job.city}، {job.country}</span><span>{job.type}</span><span>{job.mode}</span><span className="flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />{job.age}</span></div></div>
-      </article>) : <div className="col-span-2 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"><Search className="mx-auto h-8 w-8 text-slate-300" /><h3 className="mt-3 font-black">لا توجد نتائج مطابقة حالياً</h3><p className="mt-1 text-sm text-slate-500">جرّب مسمى وظيفياً آخر أو اختر كل دول الخليج.</p></div>}</div>
+      </a>) : <div className="col-span-2 rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center"><Search className="mx-auto h-8 w-8 text-slate-300" /><h3 className="mt-3 font-black">لا توجد نتائج مطابقة حالياً</h3><p className="mt-1 text-sm text-slate-500">جرّب مسمى وظيفياً آخر أو اختر كل دول الخليج.</p></div>}</div>
     </section>
 
-    <section id="specialties" className="border-y border-slate-200 bg-white py-16"><div className="container-shell"><SectionHeading eyebrow="اختر مسارك" title="تخصصات مطلوبة في سوق الخليج" action="كل التخصصات" /><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{specialties.map(({label,count,icon:Icon}) => <a key={label} href="#latest-jobs" className="specialty-card"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f8f3] text-[#008f6c]"><Icon className="h-5 w-5" /></span><div><strong className="block text-base font-black text-[#0b2135]">{label}</strong><small className="mt-1 block font-bold text-slate-400">{count}</small></div><ArrowLeft className="mr-auto h-4 w-4 text-slate-300" /></a>)}</div></div></section>
+    <section id="specialties" className="border-y border-slate-200 bg-white py-16"><div className="container-shell"><SectionHeading eyebrow="اختر مسارك" title="تخصصات مطلوبة في سوق الخليج" action="كل التخصصات" href="/jobs" /><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">{specialties.map(({label,icon:Icon}) => <a key={label} href={`/jobs?q=${encodeURIComponent(label)}`} className="specialty-card"><span className="grid h-12 w-12 place-items-center rounded-2xl bg-[#e8f8f3] text-[#008f6c]"><Icon className="h-5 w-5" /></span><div><strong className="block text-base font-black text-[#0b2135]">{label}</strong><small className="mt-1 block font-bold text-slate-400">{specialtyCount(label)} وظيفة</small></div><ArrowLeft className="mr-auto h-4 w-4 text-slate-300" /></a>)}</div></div></section>
+
+    {articles.length>0&&<section className="container-shell py-16"><SectionHeading eyebrow="نصائح مهنية" title="أحدث المقالات" action="عرض كل المقالات" href="/articles"/><div className="mt-8 grid gap-5 md:grid-cols-3">{articles.slice(0,3).map(article=><a key={article.slug} href={`/articles/${article.slug}`} className="overflow-hidden rounded-2xl border bg-white shadow-sm"><img src={article.imageUrl} alt={article.title} className="h-44 w-full object-cover" loading="lazy"/><div className="p-5"><span className="text-xs font-black text-[#009b78]">{article.category}</span><h3 className="mt-2 text-lg font-black leading-7 text-[#071a2e]">{article.title}</h3><p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-500">{article.excerpt}</p><small className="mt-4 block font-bold text-slate-400">{article.readTime}</small></div></a>)}</div></section>}
 
     <section className="container-shell py-16 md:py-20"><div className="cta-panel relative overflow-hidden rounded-[2rem] px-6 py-10 md:px-12 md:py-12"><div className="cta-rings" aria-hidden="true" /><div className="relative z-10 grid items-center gap-8 lg:grid-cols-[1fr_auto]"><div className="flex items-start gap-4"><span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-white/10 text-[#e5c77f]"><Bell className="h-6 w-6" /></span><div><h2 className="text-2xl font-black text-white md:text-3xl">لا تفوّت الفرصة المناسبة</h2><p className="mt-2 max-w-2xl font-medium leading-7 text-slate-300">سجّل اهتمامك وتوصّل بتنبيهات الوظائف الجديدة حسب تخصصك والدولة التي تختارها.</p></div></div><Button asChild className="h-12 rounded-xl bg-[#d1ad62] px-7 font-black text-[#071a2e] hover:bg-[#e0c27f]"><a href="/alerts">فعّل تنبيهات الوظائف</a></Button></div></div></section>
 
@@ -106,6 +115,6 @@ export default function Home() {
   </main>;
 }
 
-function SectionHeading({ eyebrow, title, action }: { eyebrow: string; title: string; action: string }) {
-  return <div className="flex items-end justify-between gap-4"><div><p className="mb-2 text-sm font-black text-[#009b78]">{eyebrow}</p><h2 className="text-2xl font-black tracking-tight text-[#071a2e] sm:text-3xl">{title}</h2></div><a href="#" className="hidden items-center gap-2 text-sm font-black text-[#526779] hover:text-[#009b78] sm:flex">{action}<ArrowLeft className="h-4 w-4" /></a></div>;
+function SectionHeading({ eyebrow, title, action, href="/jobs" }: { eyebrow: string; title: string; action: string; href?:string }) {
+  return <div className="flex items-end justify-between gap-4"><div><p className="mb-2 text-sm font-black text-[#009b78]">{eyebrow}</p><h2 className="text-2xl font-black tracking-tight text-[#071a2e] sm:text-3xl">{title}</h2></div><a href={href} className="hidden items-center gap-2 text-sm font-black text-[#526779] hover:text-[#009b78] sm:flex">{action}<ArrowLeft className="h-4 w-4" /></a></div>;
 }
