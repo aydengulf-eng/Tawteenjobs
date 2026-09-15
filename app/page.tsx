@@ -14,8 +14,19 @@ const countries = [
   { name: "البحرين", code: "BH", tint: "from-orange-500/15 to-orange-500/5" },
 ];
 
-type HomeJob = { slug:string; title:string; company:string; city:string; country:string; type:string; mode:string; age:string; badge:string; initials:string; color:string };
+type HomeJob = { slug:string; title:string; company:string; city:string; country:string; category:string; type:string; mode:string; age:string; badge:string; initials:string; color:string };
 type HomeArticle = { slug:string; title:string; category:string; excerpt:string; imageUrl:string; readTime:string };
+
+function countryKey(value:string) {
+  const text=value.trim().toLowerCase().replace(/[أإآ]/g,"ا").replace(/ُ/g,"");
+  if(text.includes("سعود")||text==="sa"||text.includes("saudi"))return "SA";
+  if(text.includes("امارات")||text==="ae"||text==="uae"||text.includes("united arab emirates"))return "AE";
+  if(text.includes("قطر")||text==="qa"||text.includes("qatar"))return "QA";
+  if(text.includes("كويت")||text==="kw"||text.includes("kuwait"))return "KW";
+  if(text.includes("عمان")||text==="om"||text.includes("oman"))return "OM";
+  if(text.includes("بحرين")||text==="bh"||text.includes("bahrain"))return "BH";
+  return text;
+}
 
 const specialties = [
   { label: "تقنية", icon: BriefcaseBusiness },
@@ -41,16 +52,16 @@ export default function Home() {
   const [articles, setArticles] = useState<HomeArticle[]>([]);
   useEffect(() => {
     fetch("/api/jobs").then(r=>r.json()).then((data:{jobs?:Record<string,unknown>[]})=>setJobs((data.jobs??[]).map((row)=>({
-      slug:String(row.slug??""),title:String(row.titleAr??""),company:String(row.company??""),city:String(row.city??""),country:String(row.country??""),type:String(row.employmentType??""),mode:String(row.workMode??""),age:"حديثاً",badge:row.featured?"مميزة":"جديدة",initials:String(row.company??"").split(/\s+/).map(x=>x[0]).join("").slice(0,2).toUpperCase(),color:"bg-[#0c9b78]"
+      slug:String(row.slug??""),title:String(row.titleAr??""),company:String(row.company??""),city:String(row.city??""),country:String(row.country??""),category:String(row.category??""),type:String(row.employmentType??""),mode:String(row.workMode??""),age:"حديثاً",badge:row.featured?"مميزة":"جديدة",initials:String(row.company??"").split(/\s+/).map(x=>x[0]).join("").slice(0,2).toUpperCase(),color:"bg-[#0c9b78]"
     })))).catch(()=>{});
     fetch("/api/articles").then(r=>r.json()).then((data:{articles?:HomeArticle[]})=>setArticles(data.articles??[])).catch(()=>{});
   }, []);
   const companyCount = useMemo(() => new Set(jobs.map(j=>j.company)).size, [jobs]);
-  const countryCount = (name:string) => jobs.filter(j=>j.country===name || (name==="عُمان"&&j.country==="عمان")).length;
-  const specialtyCount = (label:string) => jobs.filter(j=>`${j.title}`.includes(label)).length;
+  const countryCount = (name:string) => jobs.filter(j=>countryKey(j.country)===countryKey(name)).length;
+  const specialtyCount = (label:string) => jobs.filter(j=>`${j.title} ${j.category}`.includes(label)).length;
   const shownJobs = useMemo(() => jobs.filter((job) => {
     const text = `${job.title} ${job.company} ${job.city}`;
-    return (!submittedQuery || text.includes(submittedQuery)) && (country === "all" || job.country === country);
+    return (!submittedQuery || text.includes(submittedQuery)) && (country === "all" || countryKey(job.country) === countryKey(country));
   }), [jobs, submittedQuery, country]);
 
   function runSearch(event: React.FormEvent) {
