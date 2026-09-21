@@ -4,6 +4,7 @@ declare namespace Cloudflare {
     BUCKET?: R2Bucket;
     RESEND_API_KEY?: string;
     EMAIL_FROM?: string;
+    CONTACT_TO?: string;
     TURNSTILE_SECRET_KEY?: string;
   }
 }

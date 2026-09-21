@@ -46,7 +46,7 @@ export function HomeClient({initialJobs,initialArticles}:{initialJobs:HomeJob[];
   const [menuOpen, setMenuOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [country, setCountry] = useState("all");
-  const [submittedQuery, setSubmittedQuery] = useState("");
+  const submittedQuery = "";
   const [saved, setSaved] = useState<string[]>([]);
   const jobs=initialJobs;
   const articles=initialArticles;
@@ -60,8 +60,10 @@ export function HomeClient({initialJobs,initialArticles}:{initialJobs:HomeJob[];
 
   function runSearch(event: React.FormEvent) {
     event.preventDefault();
-    setSubmittedQuery(query.trim());
-    document.getElementById("latest-jobs")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const params=new URLSearchParams();
+    if(query.trim())params.set("q",query.trim());
+    if(country!=="all")params.set("country",country);
+    window.location.href=`/jobs${params.size?`?${params.toString()}`:""}`;
   }
 
   function toggleSaved(title: string) {

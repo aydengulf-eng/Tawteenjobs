@@ -65,6 +65,8 @@ function employmentType(value: string) {
   return "FULL_TIME";
 }
 
+function baseSalary(job:JobDetail){const values=job.salary.match(/[\d,]+/g)?.map(x=>Number(x.replace(/,/g,""))).filter(Number.isFinite)??[];if(!values.length)return undefined;const currencies:Record<string,string>={SA:"SAR",AE:"AED",QA:"QAR",KW:"KWD",OM:"OMR",BH:"BHD"};const code=countryCodes[job.country]??"";return{"@type":"MonetaryAmount",currency:currencies[code]??"SAR",value:{"@type":"QuantitativeValue",minValue:values[0],...(values[1]?{maxValue:values[1]}:{}),unitText:"MONTH"}}}
+
 function jobPosting(job: JobDetail) {
   const datePosted = job.publishedAt ?? new Date().toISOString();
   const validThrough = new Date(new Date(datePosted).getTime() + 60 * 24 * 60 * 60 * 1000).toISOString();
@@ -83,7 +85,7 @@ function jobPosting(job: JobDetail) {
     hiringOrganization: { "@type": "Organization", name: job.company },
     jobLocation: {
       "@type": "Place",
-      address: { "@type": "PostalAddress", addressLocality: job.city, addressCountry },
+      address: { "@type": "PostalAddress", addressLocality: job.city, addressRegion: job.city, addressCountry },
     },
     ...(remote ? {
       jobLocationType: "TELECOMMUTE",
@@ -91,6 +93,7 @@ function jobPosting(job: JobDetail) {
     } : {}),
     directApply: false,
     url: `https://tawteenjobs.com/jobs/${job.slug}`,
+    ...(baseSalary(job)?{baseSalary:baseSalary(job)}:{}),
   };
 }
 

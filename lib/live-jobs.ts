@@ -7,7 +7,7 @@ export async function getPublishedJobs(): Promise<Job[]> {
   const rows = await getDb().select().from(jobsTable)
     .where(eq(jobsTable.status, "published"))
     .orderBy(desc(jobsTable.publishedAt), desc(jobsTable.createdAt));
-  return rows.map((row) => {
+  return rows.filter((row)=>!row.company.includes("تجريب")).map((row) => {
     let requirements: string[] = [];
     try { requirements = JSON.parse(row.requirementsAr || "[]") as string[]; } catch {}
     return { slug:row.slug,title:row.titleAr,company:row.company,city:row.city,country:row.country,type:row.employmentType,mode:row.workMode,age:"حديثاً",badge:row.featured?"مميزة":"جديدة",initials:row.company.split(/\s+/).map((part)=>part[0]).join("").slice(0,2).toUpperCase(),category:row.category,salary:row.salary,applyUrl:row.applyUrl,description:row.descriptionAr,requirements };
