@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { CookieConsent } from "@/components/cookie-consent";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://tawteenjobs.com"),
@@ -8,7 +9,6 @@ export const metadata: Metadata = {
     template: "%s | توطين للوظائف",
   },
   description: "اكتشف أحدث الوظائف وفرص التوطين في السعودية والإمارات وقطر والكويت والبحرين وعُمان.",
-  alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     locale: "ar_SA",
@@ -40,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ar" dir="rtl">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">{children}<CookieConsent /></body>
     </html>
   );
 }

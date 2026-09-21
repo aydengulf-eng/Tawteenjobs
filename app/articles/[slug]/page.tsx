@@ -1,10 +1,9 @@
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
-import { articles as fallback } from "@/lib/content";
 import { getDb } from "@/db";
 import { articles as table } from "@/db/schema";
 type Article={slug:string;title:string;category:string;read:string;excerpt:string;content?:string;imageUrl?:string};
-async function find(slug:string):Promise<Article|undefined>{try{const[x]=await getDb().select().from(table).where(eq(table.slug,slug)).limit(1);if(x)return{slug:x.slug,title:x.title,category:x.category,read:x.readTime,excerpt:x.excerpt,content:x.content,imageUrl:x.imageUrl}}catch{}return fallback.find(x=>x.slug===slug)}
-export async function generateMetadata({params}:{params:Promise<{slug:string}>}){const{slug}=await params;const a=await find(slug);return{title:a?`${a.title} | توطين`:"المقال غير موجود",description:a?.excerpt}}
+async function find(slug:string):Promise<Article|undefined>{try{const[x]=await getDb().select().from(table).where(eq(table.slug,slug)).limit(1);if(x)return{slug:x.slug,title:x.title,category:x.category,read:x.readTime,excerpt:x.excerpt,content:x.content,imageUrl:x.imageUrl}}catch{}return undefined}
+export async function generateMetadata({params}:{params:Promise<{slug:string}>}){const{slug}=await params;const a=await find(slug);return{title:a?`${a.title} | توطين`:"المقال غير موجود",description:a?.excerpt,alternates:a?{canonical:`/articles/${a.slug}`}:undefined,robots:a?undefined:{index:false,follow:false}}}
 export default async function ArticlePage({params}:{params:Promise<{slug:string}>}){const{slug}=await params;const a=await find(slug);if(!a)notFound();const paragraphs=(a.content??"اقرأ الإعلان بعناية وحدد المهارات المطلوبة، ثم خصص سيرتك الذاتية وطلب التوظيف بما يناسب الفرصة.").split(/\n+/).filter(Boolean);return <main dir="rtl" className="min-h-screen bg-[#f5f8fa]"><SiteHeader/><article className="container-shell max-w-3xl py-12"><span className="font-black text-[#009b78]">{a.category} • {a.read}</span><h1 className="mt-4 text-3xl font-black leading-[1.5] text-[#071a2e] md:text-4xl">{a.title}</h1><p className="mt-4 text-lg leading-8 text-slate-500">{a.excerpt}</p>{a.imageUrl&&<img src={a.imageUrl} alt={a.title} className="mt-8 max-h-[430px] w-full rounded-2xl object-cover"/>}<div className="mt-8 space-y-5 rounded-2xl border bg-white p-6 text-[1.05rem] leading-9 text-slate-700">{paragraphs.map((p,i)=><p key={i}>{p}</p>)}</div></article></main>}

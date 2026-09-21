@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { BriefcaseBusiness, CheckCircle2, Clock3, MapPin, Share2 } from "lucide-react";
 import { SiteHeader } from "@/components/site-header";
 import { Button } from "@/components/ui/button";
-import { jobs as demoJobs, type Job } from "@/lib/jobs";
+import type { Job } from "@/lib/jobs";
 import { getDb } from "@/db";
 import { jobs as jobsTable } from "@/db/schema";
 
@@ -42,7 +42,7 @@ async function findJob(slug: string): Promise<JobDetail | undefined> {
     }
   } catch {}
 
-  return demoJobs.find((job) => job.slug === slug);
+  return undefined;
 }
 
 const countryCodes: Record<string, string> = {
