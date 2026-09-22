@@ -1,19 +1,5 @@
 "use client";
 import { useState } from "react";
-const example=`[
-  {
-    "titleAr": "مهندس برمجيات",
-    "company": "اسم الشركة",
-    "country": "السعودية",
-    "city": "الرياض",
-    "category": "التقنية والبرمجة",
-    "employmentType": "دوام كامل",
-    "workMode": "حضوري",
-    "salary": "",
-    "applyUrl": "https://example.com/apply",
-    "descriptionAr": "وصف الوظيفة هنا",
-    "requirementsAr": ["خبرة مناسبة", "مهارات تواصل"],
-    "status": "published"
-  }
-]`;
+import { verifiedJobsImport } from "@/lib/import-packs";
+const example=JSON.stringify(verifiedJobsImport,null,2);
 export function BulkImportForm(){const[secret,setSecret]=useState("");const[json,setJson]=useState(example);const[message,setMessage]=useState("");const[busy,setBusy]=useState(false);async function submit(){setBusy(true);setMessage("");let parsed:unknown;try{parsed=JSON.parse(json)}catch{setMessage("JSON فيه خطأ");setBusy(false);return}const res=await fetch("/api/admin/jobs/import",{method:"POST",headers:{"content-type":"application/json","x-admin-secret":secret},body:JSON.stringify(parsed)});const data=await res.json() as {error?:string;added?:number;skipped?:number};setMessage(res.ok?`تمت إضافة ${data.added} وتخطي ${data.skipped}`:data.error??"وقع خطأ");setBusy(false)}return <div className="rounded-2xl border bg-white p-6"><label className="block text-sm font-black">الكود السري<input type="password" value={secret} onChange={e=>setSecret(e.target.value)} className="mt-2 h-12 w-full rounded-xl border px-4 outline-none focus:border-[#00a67e]"/></label><label className="mt-5 block text-sm font-black">قائمة الوظائف JSON<textarea dir="ltr" value={json} onChange={e=>setJson(e.target.value)} spellCheck={false} className="mt-2 min-h-[430px] w-full rounded-xl border p-4 font-mono text-sm outline-none focus:border-[#00a67e]"/></label><div className="mt-5 flex items-center gap-4"><button onClick={submit} disabled={busy||!secret} className="rounded-xl bg-[#00a67e] px-6 py-3 font-black text-white disabled:opacity-50">{busy?"جارٍ الاستيراد...":"استيراد الوظائف"}</button>{message&&<p className="font-black text-[#007b5f]">{message}</p>}</div></div>}
