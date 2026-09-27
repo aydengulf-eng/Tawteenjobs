@@ -16,6 +16,8 @@ const managedLinux = readExecutionProfile() === "managed-linux";
 const localBindingConfig = {
   main: "vinext/server/fetch-handler",
   workers_dev: false,
+  // Preserve variables configured in the Cloudflare dashboard on deploy.
+  keep_vars: true,
   compatibility_flags: ["nodejs_compat"],
   d1_databases: d1
     ? [
