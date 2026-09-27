@@ -6,12 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const countries = [
-  { name: "السعودية", code: "🇸🇦", art: "نخلة", tint: "from-emerald-500/15 to-emerald-500/5" },
-  { name: "الإمارات", code: "🇦🇪", art: "أفق", tint: "from-rose-500/15 to-rose-500/5" },
-  { name: "قطر", code: "🇶🇦", art: "لؤلؤ", tint: "from-purple-500/15 to-purple-500/5" },
-  { name: "الكويت", code: "🇰🇼", art: "أبراج", tint: "from-sky-500/15 to-sky-500/5" },
-  { name: "عُمان", code: "🇴🇲", art: "جبال", tint: "from-red-500/15 to-red-500/5" },
-  { name: "البحرين", code: "🇧🇭", art: "بحر", tint: "from-orange-500/15 to-orange-500/5" },
+  { name: "السعودية", code: "🇸🇦", slug: "saudi-arabia", art: "نخلة", tint: "from-emerald-500/15 to-emerald-500/5" },
+  { name: "الإمارات", code: "🇦🇪", slug: "uae", art: "أفق", tint: "from-rose-500/15 to-rose-500/5" },
+  { name: "قطر", code: "🇶🇦", slug: "qatar", art: "لؤلؤ", tint: "from-purple-500/15 to-purple-500/5" },
+  { name: "الكويت", code: "🇰🇼", slug: "kuwait", art: "أبراج", tint: "from-sky-500/15 to-sky-500/5" },
+  { name: "عُمان", code: "🇴🇲", slug: "oman", art: "جبال", tint: "from-red-500/15 to-red-500/5" },
+  { name: "البحرين", code: "🇧🇭", slug: "bahrain", art: "بحر", tint: "from-orange-500/15 to-orange-500/5" },
 ];
 
 export type HomeJob = { slug:string; title:string; company:string; city:string; country:string; category:string; type:string; mode:string; age:string; badge:string; initials:string; color:string };
@@ -101,7 +101,7 @@ export function HomeClient({initialJobs,initialArticles}:{initialJobs:HomeJob[];
       <div className="container-shell relative z-20 pb-8"><div className="stats-card grid grid-cols-2 divide-x-reverse divide-x divide-slate-100 md:grid-cols-4">{[{n:String(jobs.length),t:"وظيفة متاحة"},{n:String(companyCount),t:"شركة توظف"},{n:"6",t:"دول خليجية"},{n:"يومياً",t:"تحديث الوظائف"}].map((stat) => <div className="px-3 py-4 text-center sm:py-6" key={stat.t}><strong className="block text-xl font-black text-[#071a2e] sm:text-3xl">{stat.n}</strong><span className="mt-1 block text-xs font-bold text-slate-500 sm:text-sm">{stat.t}</span></div>)}</div></div>
     </section>
 
-    <section id="countries" className="container-shell scroll-mt-28 py-14"><SectionHeading eyebrow="اكتشف الفرص حولك" title="تصفح الوظائف حسب الدولة" action="عرض جميع الدول" href="/jobs" /><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{countries.map((item) => <a key={item.code} href={`/jobs?country=${encodeURIComponent(item.name)}`} className={`country-card group bg-gradient-to-br ${item.tint}`}><div className="country-art" aria-hidden="true"><Building2/><span>{item.art}</span></div><span className="country-code">{item.code}</span><strong>{item.name}</strong><small>{countryCount(item.name)} وظيفة متاحة</small><span className="mt-3 flex items-center gap-1 text-xs font-black text-[#008f6c]">عرض الفرص <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-1" /></span></a>)}</div></section>
+    <section id="countries" className="container-shell scroll-mt-28 py-14"><SectionHeading eyebrow="اكتشف الفرص حولك" title="تصفح الوظائف حسب الدولة" action="عرض جميع الوظائف" href="/jobs" /><div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{countries.map((item) => <a key={item.code} href={`/countries/${item.slug}`} className={`country-card group bg-gradient-to-br ${item.tint}`}><div className="country-art" aria-hidden="true"><Building2/><span>{item.art}</span></div><span className="country-code">{item.code}</span><strong>{item.name}</strong><small>{countryCount(item.name)} وظيفة متاحة</small><span className="mt-3 flex items-center gap-1 text-xs font-black text-[#008f6c]">عرض الفرص <ArrowLeft className="h-4 w-4 transition group-hover:-translate-x-1" /></span></a>)}</div></section>
 
     <section id="latest-jobs" className="container-shell scroll-mt-28 py-14">
       <SectionHeading eyebrow="فرص مختارة بعناية" title={submittedQuery || country !== "all" ? `نتائج البحث (${shownJobs.length})` : "أحدث الوظائف"} action="عرض جميع الوظائف" />
